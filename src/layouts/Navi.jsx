@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom'
 import { Container, Menu,Button} from "semantic-ui-react";
 import CandidateSignedOut from "./CandidateSignedOut";
 import EmployerSignedOut from "./EmployerSignedOut";
@@ -8,8 +9,8 @@ export default function navi() {
     <Menu inverted color="purple" >
       <Container>
         <Menu.Item>
-          <Button color="purple">
-            <Button.Content visible>Hrms.Net</Button.Content>
+          <Button color="purple" as={Link} to={"/"}>
+            <Button.Content visible inverted color="purple">Hrms.Net</Button.Content>
           </Button>
         </Menu.Item>
 

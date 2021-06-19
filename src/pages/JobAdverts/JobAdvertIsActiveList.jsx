@@ -1,6 +1,6 @@
 import React,{ useState,useEffect} from 'react'
 import { Card } from 'semantic-ui-react'
-import JobAdvertService from '../services/JobAdvertService';
+import JobAdvertService from '../../services/JobAdvertService';
 export default function JobAdvertList() {
     const [jobAdverts, setJobAdverts] = useState([]);
 
@@ -16,7 +16,7 @@ export default function JobAdvertList() {
                 <Card.Content >
                 <Card.Header textAlign="left">{jobAdvert.title}</Card.Header>
                 <Card.Meta textAlign="left">{jobAdvert.companyName}</Card.Meta>
-                <Card.Description textAlign="left" content={jobAdvert.working}/>
+                <Card.Description textAlign="left" content={jobAdvert.workTime}/>
                 <Card.Description textAlign="left" content={jobAdvert.city}/>
                 <Card.Description textAlign="right" content={jobAdvert.createDate}/>
                 </Card.Content>
