@@ -1,86 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { useFormik } from "formik";
+import { Formik } from "formik";
 import * as Yup from "yup";
 import JobAdvertService from "../../services/JobAdvertService";
 import { useHistory } from "react-router-dom";
 import WayOfWorkingService from "../../services/WayOfWorkingService";
 import JobTitleService from "../../services/JobTitleService";
-import { Button, Card,Form, Grid, Input, Message, TextArea } from "semantic-ui-react";
+import {
+  Button,
+  Card,
+  Form,
+  Grid,
+} from "semantic-ui-react";
 import EducationLevelService from "../../services/EducationLevelService";
 import WorkTypeService from "../../services/WorkTypeService";
 import CityService from "../../services/CityService";
-
+import HrmsTextInput from "../../utilities/CustomFormControls/HrmsTextInput";
+import {toast} from "react-toastify";
 
 export default function JobAdvertAdd() {
-  
-  const JobAdvertAddSchema = Yup.object().shape({
-    lastDate: Yup.date().nullable().required("Bu alan boş bırakılamaz"),
-    description: Yup.string().required("Bu alan boş bırakılamaz"),
-    educationLevelId: Yup.string().required("Bu alan boş bırakılamaz"),
-    jobTitleId: Yup.string().required("Bu alan boş bırakılamaz"),
-    workTimeId: Yup.string().required("Bu alan boş bırakılamaz"),
-    workTypeId: Yup.string().required("Bu alan boş bırakılamaz"),
-    openPositionCount: Yup.string()
-      .required("Posizyon sayısı zorunludur")
-      .min(1, "Posizyon sayısı 1 den küçük olamaz"),
-    cityId: Yup.string().required("Bu alan boş bırakılamaz"),
-    minSalary: Yup.number()
-      .min(0, "0 Dan az olamaz")
-      .required("Bu alan zorunludur"),
-    maxSalary: Yup.number()
-      .min(0, "0 Dan az olamaz")
-      .required("Bu alan zorunludur"),
-  });
-
-  const history = useHistory();
-  const formik = useFormik({
-    initialValues: {
-      lastDate: "",
-      description: "",
-      jobTitleId: "",
-      workTimeId: "",
-      workTypeId: "",
-      openPositionCount: "",
-      cityId: "",
-      minSalary: "",
-      maxSalary: "",
-      educationLevelId:"",
-    },
-    validation: JobAdvertAddSchema,
-    onSubmit: (values) => {
-     let jobAdvertAdd={
-      jobTitle:{
-        jobTitleId:values.jobTitleId
-         },
-         employer:{
-             id:25
-         },
-         city:{
-             id:values.cityId
-         },
-         ofWorking:{
-             id:values.workTimeId
-         },
-         workType:{
-             id:values.workTypeId
-         },
-         educationLevel:{
-            id:values.educationLevelId
-         },
-         description:values.description,
-         openPositionCount:values.openPositionCount,
-         lastApplyDate:values.lastDate,
-         minSalary:values.minSalary,
-         maxSalary:values.maxSalary,
-     }
-
-     let jobAdvertService = new JobAdvertService();
-     jobAdvertService.add(jobAdvertAdd).then((result)=>console.log(result))
-     alert("Başarılı")
-     history.push("/employer")
-    },
-  });
-
   const [workTypes, setWorkTypes] = useState([]);
   const [wayOfWorkings, setWayOfWorkings] = useState([]);
   const [cities, setCities] = useState([]);
@@ -93,9 +30,11 @@ export default function JobAdvertAdd() {
     let wayOfWorkingService = new WayOfWorkingService();
     let cityService = new CityService();
     let jobTitleService = new JobTitleService();
-    let educationLevelService = new EducationLevelService()
+    let educationLevelService = new EducationLevelService();
 
-    workTypeService.getWorkType().then((result)=>setWorkTypes(result.data.data))
+    workTypeService
+      .getWorkType()
+      .then((result) => setWorkTypes(result.data.data));
     wayOfWorkingService
       .getWayOfWorkings()
       .then((result) => setWayOfWorkings(result.data.data));
@@ -103,254 +42,214 @@ export default function JobAdvertAdd() {
     jobTitleService
       .getJobTitles()
       .then((result) => setJobTitles(result.data.data));
-      educationLevelService.getEducationLevels().then((result)=>setEducationLevels(result.data.data))
+    educationLevelService
+      .getEducationLevels()
+      .then((result) => setEducationLevels(result.data.data));
   }, []);
 
-  const handleChangeSemantic = (value, field) => {
-    formik.setFieldValue(field, value);
-  };
+  const JobAdvertAddSchema = Yup.object({
+    lastDate  : Yup.date().nullable().required("Son başvuru tarih alanı boş bırakılamaz"),
+    description: Yup.string().required("Açıklama alanı boş bırakılamaz"),
+    educationLevelId: Yup.string().required("Eğitim seviyesi alanı boş bırakılamaz"),
+    jobTitleId: Yup.string().required("İş poziyonu alanı boş bırakılamaz"),
+    workTimeId: Yup.string().required("Çalışma zamanı alanı boş bırakılamaz"),
+    workTypeId: Yup.string().required("Çalışma türü alanı boş bırakılamaz"),
+    openPositionCount: Yup.string()
+      .required("Posizyon sayısı alanı boş bırakılamaz")
+      .min(1, "Posizyon sayısı 1 den küçük olamaz"),
+    cityId: Yup.string().required("Şehir alanı boş bırakılamaz"),
+    minSalary: Yup.number()
+      .min(0, "0 Dan az olamaz")
+      .required("Minimum maaş alanı zorunludur"),
+    maxSalary: Yup.number()
+      .min(0, "0 Dan az olamaz")
+      .required("Maximum maaş alanı zorunludur"),
+  });
 
-  const workTypeOptions = workTypes.map((workType,index)=>({
-    key:index,
-    text:workType.workType,
-    value:workType.id
-}))
+  const history = useHistory();
+  const  initialValues= {
+      lastDate: "",
+      description: "",
+      jobTitleId: "",
+      workTimeId: "",
+      workTypeId: "",
+      openPositionCount: "",
+      cityId: "",
+      minSalary: "",
+      maxSalary: "",
+      educationLevelId: "",
+    }
 
-  const educationLevelOption = educationLevels.map((educationLevel,index)=>({
-      key:index,
-      text:educationLevel.educationLevel,
-      value:educationLevel.id
-  }))
-  const cityOptions = cities.map((city, index) => ({
-    key: index,
-    text: city.name,
-    value: city.id,
-  }));
-
-  const wayOfWorkingOption = wayOfWorkings.map((wayOfWorking, index) => ({
-    key: index,
-    text: wayOfWorking.workTime,
-    value: wayOfWorking.id,
-  }));
-
-  const jobTitleOptions = jobTitles.map((jobTitle, index) => ({
-    key: index,
-    text: jobTitle.title,
-    value: jobTitle.jobTitleId,
-  }));
-  
   return (
     <div>
-      <Card fluid>
+      <Card fluid style={{marginTop:"10px"}}>
         <Card.Content>
-          <Form onSubmit={formik.handleSubmit}>
-            <Form.Field style={{ marginBottom: "1rem" }}>
-                <Grid stackable>
-                    <Grid.Column  width={8}>
-              <label>İş Pozisyonu</label>
-              <Form.Dropdown
-                clearable
-                item
-                placeholder="İş Pozisyonu"
-                search
-                selection
-                onChange={(event, data) => {
-                  handleChangeSemantic(data.value, "jobTitleId");
-                }}
-                onBlur={formik.onBlur}
-                id="jobTitleId"
-                value={formik.values.jobTitleId}
-                options={jobTitleOptions}
-              />
-              {formik.errors.jobTitleId && formik.touched.jobTitleId ? (
-                <Message color="red">{formik.errors.jobTitleId}</Message>
-              ) : null}
-              </Grid.Column>
-              <Grid.Column  width={8}>
-              <label>Eğitim Seviyesi</label>
-              <Form.Dropdown
-                clearable
-                item
-                placeholder="Eğitim Seviyesi"
-                search
-                selection
-                onChange={(event, data) => {
-                  handleChangeSemantic(data.value, "educationLevelId");
-                }}
-                onBlur={formik.onBlur}
-                id="educationLevelId"
-                value={formik.values.educationLevelId}
-                options={educationLevelOption}
-              />
-              {formik.errors.educationLevelId && formik.touched.educationLevelId ? (
-                <Message color="red">{formik.errors.educationLevelId}</Message>
-              ) : null}
-              </Grid.Column>
-              </Grid>
-            </Form.Field>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={JobAdvertAddSchema}
+            onSubmit={(values) => {
+              let jobAdvertAdd={
+               jobTitle:{
+                 jobTitleId:values.jobTitleId
+                  },
+                  employer:{
+                      id:25
+                  },
+                  city:{
+                      id:values.cityId
+                  },
+                  ofWorking:{
+                      id:values.workTimeId
+                  },
+                  workType:{
+                      id:values.workTypeId
+                  },
+                  educationLevel:{
+                     id:values.educationLevelId
+                  },
+                  description:values.description,
+                  openPositionCount:values.openPositionCount,
+                  lastApplyDate:values.lastDate,
+                  minSalary:values.minSalary,
+                  maxSalary:values.maxSalary,
+              }
          
-              
-             
-            <Form.Field>
+              let jobAdvertService = new JobAdvertService();
+              jobAdvertService.add(jobAdvertAdd).then((result)=>{
+               toast.success("İş İlanı Eklendi")
+              })
+              history.push("/employer")
+             }}
+          >
+              {({ handleSubmit}) => (
+            <Form className="ui form" onSubmit={handleSubmit} >
+              <Form.Field style={{ marginBottom: "1rem" }}>
                 <Grid stackable>
-                    <Grid.Column  width={8}>
-              <label>Şehir</label>
-              <Form.Dropdown
-                clearable
-                item
-                placeholder="Şehir"
-                search
-                selection
-                onChange={(event, data) => {
-                  handleChangeSemantic(data.value, "cityId");
-                }}
-                onBlur={formik.onBlur}
-                id="cityId"
-                value={formik.values.cityId}
-                options={cityOptions}
-              />
-              {formik.errors.cityId && formik.touched.cityId ? (
-                <Message color="red">{formik.errors.cityId}</Message>
-              ) : null}
-              </Grid.Column>
-              <Grid.Column  width={8}>
-              <label>Çalışma Şekli</label>
-              <Form.Dropdown
-                clearable
-                item
-                placeholder="Çalışma Şekli"
-                search
-                selection
-                onChange={(event, data) => {
-                  handleChangeSemantic(data.value, "workTypeId");
-                }}
-                onBlur={formik.onBlur}
-                id="workTypeId"
-                value={formik.values.workTypeId}
-                options={workTypeOptions}
-              />
-              {formik.errors.workTypeId && formik.touched.workTypeId ? (
-                <Message color="red">{formik.errors.workTypeId}</Message>
-              ) : null}
-              </Grid.Column>
-              </Grid>
-            </Form.Field>
-            <Form.Field>
-              <label>Çalışma Süresi</label>
-              <Form.Dropdown
-                clearable
-                item
-                placeholder="Çalışma Süresi"
-                search
-                selection
-                onChange={(event, data) => {
-                  handleChangeSemantic(data.value, "workTimeId");
-                }}
-                onBlur={formik.onBlur}
-                id="workTimeId"
-                value={formik.values.workTimeId}
-                options={wayOfWorkingOption}
-              />
-              {formik.errors.workTimeId && formik.touched.workTimeId ? (
-                <Message color="red">{formik.errors.workTimeId}</Message>
-              ) : null}
-            </Form.Field>
-            <Form.Field>
-              <Grid stackable>
-                <Grid.Column width={8}>
-                  <label>Minimum Maaş Aralığı</label>
-                  <Input
-                    style={{ width: "100%" }}
-                    type="number"
-                    placeholder="Minimum Maaş Aralığı"
-                    value={formik.values.minSalary}
-                    name="minSalary"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  ></Input>
-                  {formik.errors.minSalary && formik.touched.minSalary && (
-                    <div className={"ui pointing red basic label"}>
-                      {formik.errors.minSalary}
-                    </div>
-                  )}
-                </Grid.Column>
-                <Grid.Column width={8}>
-                  <label>Maximum Maaş Aralığı</label>
-                  <Input
-                    style={{ width: "100%" }}
-                    type="number"
-                    placeholder="Maximum Maaş Aralığı"
-                    value={formik.values.maxSalary}
-                    name="maxSalary"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  ></Input>
-                  {formik.errors.maxSalary && formik.touched.maxSalary && (
-                    <div className={"ui pointing red basic label"}>
-                      {formik.errors.maxSalary}
-                    </div>
-                  )}
-                </Grid.Column>
-              </Grid>
-            </Form.Field>
-            <Form.Field>
-              <Grid stackable>
-                <Grid.Column width={8}>
-                <label>Açık İş Pozisyonu Sayısı</label>
-                  <Input
-                    style={{ width: "100%" }}
-                    type="number"
-                    placeholder="Açık İş Pozisyonu Sayısı"
-                    value={formik.values.openPositionCount}
-                    name="openPositionCount"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  ></Input>
-                  {formik.errors.openPositionCount && formik.touched.openPositionCount && (
-                    <div className={"ui pointing red basic label"}>
-                      {formik.errors.openPositionCount}
-                    </div>
-                  )}
-                </Grid.Column>
-                <Grid.Column width={8}>
-                <label>Son Başvuru Tarihi</label>
-                  <Input
-                    style={{ width: "100%" }}
-                    type="text"
-                    placeholder="Son Başvuru Tarihi"
-                    value={formik.values.lastDate}
-                    name="lastDate"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  ></Input>
-                  {formik.errors.lastDate && formik.touched.lastDate && (
-                    <div className={"ui pointing red basic label"}>
-                      {formik.errors.lastDate}
-                    </div>
-                  )}
-                </Grid.Column>
-              </Grid>
-            </Form.Field>
-            <Form.Field>
-              <label>Açıklama</label>
-                <TextArea
-                  placeholder="Açıklama"
-                  style={{ minHeight: 100 }}
-                  error={Boolean(formik.errors.description).toString()}
-                  value={formik.values.description}
-                  name="description"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.errors.description && formik.touched.description && (
-                  <div className={"ui pointing red basic label"}>
-                    {formik.errors.description}
-                  </div>
-                )}
+                  <Grid.Column width={8}>
+                    <label>İş Pozisyonu</label>
+                    <HrmsTextInput as="select" name="jobTitleId">
+                      {jobTitles.map((jobTitle) => (
+                        <option
+                          key={jobTitle.jobTitleId}
+                          value={jobTitle.jobTitleId}
+                        >
+                          {jobTitle.title}
+                        </option>
+                      ))}
+                    </HrmsTextInput>
+                  </Grid.Column>
+                  <Grid.Column width={8}>
+                    <label>Eğitim Seviyesi</label>
+                    <HrmsTextInput as="select" name="educationLevelId">
+                      {educationLevels.map((educationLevel) => (
+                        <option
+                          key={educationLevel.id}
+                          value={educationLevel.id}
+                        >
+                          {educationLevel.educationLevel}
+                        </option>
+                      ))}
+                    </HrmsTextInput>
+                  </Grid.Column>
+                </Grid>
+              </Form.Field>
+
+              <Form.Field>
+                <Grid stackable>
+                  <Grid.Column width={8}>
+                    <label>Şehir</label>
+                    <HrmsTextInput as="select" name="cityId">
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.name}
+                        </option>
+                      ))}
+                    </HrmsTextInput>
+                  </Grid.Column>
+                  <Grid.Column width={8}>
+                    <label>Çalışma Şekli</label>
+                    <HrmsTextInput as="select" name="workTypeId">
+                      {workTypes.map((workType) => (
+                        <option key={workType.id} value={workType.id}>
+                          {workType.workType}
+                        </option>
+                      ))}
+                    </HrmsTextInput>
+                  </Grid.Column>
+                </Grid>
+              </Form.Field>
+
+              <Form.Field>
+                <Grid stackable>
+                  <Grid.Column width={8}>
+                    <label>Çalışma Süresi</label>
+                    <HrmsTextInput as="select" name="workTimeId">
+                      {wayOfWorkings.map((wayOfWorking) => (
+                        <option
+                          key={wayOfWorking.id}
+                          value={wayOfWorking.id}
+                        >
+                          {wayOfWorking.workTime}
+                        </option>
+                      ))}
+                    </HrmsTextInput>
+                  </Grid.Column>
+                  <Grid.Column width={8}>
+                    <label>Açık İş Pozisyonu Adedi</label>
+                    <HrmsTextInput
+                      as="input"
+                      name="openPositionCount"
+                      placeholder="0"
+                    />
+                  </Grid.Column>
+                </Grid>
+              </Form.Field>
+              <Form.Field>
+                <Grid stackable>
+                  <Grid.Column width={8}>
+                    <label>Minimum Maaş Aralığı</label>
+                    <HrmsTextInput
+                      as="input"
+                      name="minSalary"
+                      placeholder="0"
+                    />
+                  </Grid.Column>
+                  <Grid.Column width={8}>
+                    <label>Maximum Maaş Aralığı</label>
+                    <HrmsTextInput
+                      as="input"
+                      name="maxSalary"
+                      placeholder="0"
+                    />
+                  </Grid.Column>
+                </Grid>
+              </Form.Field>
+              <Form.Field>
+                <Grid stackable>
+                  <Grid.Column >
+                    <label>Son Başvuru Tarihi</label>
+                    <HrmsTextInput
+                      as="input"
+                      name="lastDate"
+                      
+                    />
+                  </Grid.Column>
+                </Grid>
+              </Form.Field>
+              <Form.Field>
+                <Grid stackable>
+                  <Grid.Column>
+                    <label>Açıklama</label>
+                    <HrmsTextInput
+                      as="textarea"
+                      name="description"
+                    />
+                  </Grid.Column>
+                </Grid>
               </Form.Field>
               <Button
                 content="Ekle"
-                onClick={formik.handleSubmit}
+                onClick={handleSubmit}
                 inverted
                 color="purple"
                 labelPosition="right"
@@ -359,7 +258,9 @@ export default function JobAdvertAdd() {
                 type="submit"
                 style={{ marginLeft: "20px" }}
               />
-          </Form>
+            </Form>
+                 )}
+          </Formik>
         </Card.Content>
       </Card>
     </div>

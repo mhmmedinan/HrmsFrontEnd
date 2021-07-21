@@ -14,8 +14,8 @@ export default class JobAdvertService{
         return axios.post("http://localhost:8080/api/jobadverts/delete?id="+id);
     }
 
-    getAll(){
-        return axios.get("http://localhost:8080/api/jobadverts/getall")
+    getAllSorted(){
+        return axios.get("http://localhost:8080/api/jobadverts/getallsorted")
     }
 
     jobAdvertTrueIsActive(id){
@@ -24,5 +24,9 @@ export default class JobAdvertService{
 
     jobAdvertFalseIsActive(id){
         return axios.post("http://localhost:8080/api/jobadverts/falseisactive?id="+id)
+    }
+
+    getFilterAndPage(pageNo,pageSize,filterOption){
+        return axios.post(`http://localhost:8080/api/jobadverts/getfilterandpage?pageNo=${pageNo}&pageSize=${pageSize}`,filterOption)
     }
 }
